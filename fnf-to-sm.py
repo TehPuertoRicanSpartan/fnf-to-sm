@@ -202,7 +202,7 @@ def fnf_to_sm(infile):
 			# write chart & difficulty info
 			sm_notes += "\n"
 			sm_notes += "#NOTES:\n"
-			sm_notes += "	  dance-double:\n"
+			sm_notes += "	  dance-couple:\n"
 			sm_notes += "	  :\n"
 			sm_notes += "	  {}:\n".format(chart_json["diff"]) # e.g. Challenge:
 			sm_notes += "	  {}:\n".format(diff_value)
