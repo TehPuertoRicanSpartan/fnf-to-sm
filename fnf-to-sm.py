@@ -17,13 +17,15 @@
 
 # Built from the original chart-to-sm.js by Paturages, released under GPL3 with his permission
 
+# yo. idk shit about python, so i'm gonna try understanding it
+
 import re
 import json
 import math
 import sys
 import os
 
-VERSION = "v0.1.2"
+VERSION = "TPRS' Version"
 
 SM_EXT = ".sm"
 SSC_EXT = ".ssc"
@@ -33,7 +35,7 @@ FNF_EXT = ".json"
 MEASURE_TICKS = 192
 BEAT_TICKS = 48
 # fnf step = 1/16 note
-STEP_TICKS = 12
+STEP_TICKS = 16
 
 NUM_COLUMNS = 8
 
@@ -234,6 +236,42 @@ def fnf_to_sm(infile):
 					sm_notes += ";\n"
 				else:
 					sm_notes += ',\n'
+				
+			# dance-single support
+			sm_notes += "\n//---------------dance-single - ----------------\n"
+			sm_notes += "\n"
+			sm_notes += "#NOTES:\n"
+			sm_notes += "	  dance-single:\n"
+			sm_notes += "	  :\n"
+			sm_notes += "	  {}:\n".format(chart_json["diff"]) # e.g. Challenge:
+			sm_notes += "	  {}:\n".format(diff_value)
+			sm_notes += "	  :\n" # empty groove radar
+			# ensure the last measure has the correct number of lines
+			if last_note % MEASURE_TICKS != 0:
+				last_note += MEASURE_TICKS - (last_note % MEASURE_TICKS)
+
+			# add notes for each measure
+			for measureStart in range(0, last_note, MEASURE_TICKS):
+				measureEnd = measureStart + MEASURE_TICKS
+				valid_indexes = set()
+				for i in range(measureStart, measureEnd):
+					if i in notes:
+						valid_indexes.add(i - measureStart)
+				
+				noteStep = measure_gcd(valid_indexes, MEASURE_TICKS)
+
+				for i in range(measureStart, measureEnd, noteStep):
+					if i not in notes:
+						sm_notes += '0'*(NUM_COLUMS/2) + '\n'
+					else:
+						for digit in notes[i]:
+							sm_notes += str(digit)
+						sm_notes += '\n'
+
+				if measureStart + MEASURE_TICKS == last_note:
+					sm_notes += ";\n"
+				else:
+					sm_notes += ',\n'
 
 	# output simfile
 	with open("{}.sm".format(song_name), "w") as outfile:
@@ -273,7 +311,7 @@ def sm_to_fnf(infile):
 	fnf_notes = []
 	section_number = 0
 	offset = 0
-	print("Converting {} to blammed.json".format(infile))
+	print("Converting {} to {}.json".format(infile))
 	with open(infile, "r") as chartfile:
 		line = chartfile.readline()
 		while len(line) > 0:
@@ -362,25 +400,26 @@ def sm_to_fnf(infile):
 			line = chartfile.readline()
 			
 	# assemble the fnf json
+	# except i made it so it makes the json look like a psych engine chart lmao
 	chart_json = {}
 	chart_json["song"] = {}
-	#chart_json["song"]["song"] = title
-	chart_json["song"]["song"] = "Blammed"
+	chart_json["song"]["song"] = title
 	chart_json["song"]["notes"] = fnf_notes
 	chart_json["song"]["bpm"] = tempomarkers[0].getBPM()
 	chart_json["song"]["sections"] = 0
 	chart_json["song"]["needsVoices"] = False
 	chart_json["song"]["player1"] = "bf"
-	chart_json["song"]["player2"] = "pico"
+	chart_json["song"]["player2"] = "dad"
+	chart_json["song"]["player3"] = null
+	chart_json["song"]["gfVersion"] = "gf"
 	chart_json["song"]["sectionLengths"] = []
-	chart_json["song"]["speed"] = 2.0
+	chart_json["song"]["speed"] = tempomarkers[0].getBPM() / 60 # xmod lmao
 	
-	#with open("{}.json".format(title), "w") as outfile:
-	with open("blammed.json".format(title), "w") as outfile:
+	with open("{}.json".format(title), "w") as outfile:
 		json.dump(chart_json, outfile)
 
 def usage():
-	print("FNF SM converter")
+	print("FNF SM converter - TPRS Edition")
 	print("Usage: {} [chart_file]".format(sys.argv[0]))
 	print("where [chart_file] is a .json FNF chart or a .sm simfile")
 	sys.exit(1)
