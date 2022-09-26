@@ -262,10 +262,10 @@ def fnf_to_sm(infile):
 
 				for i in range(measureStart, measureEnd, noteStep):
 					if i not in notes:
-						sm_notes += '0'*(NUM_COLUMS/2) + '\n'
+						sm_notes += '0'*NUM_COLUMS[4:7] + '\n'
 					else:
 						for digit in notes[i]:
-							sm_notes += str(digit)
+							sm_notes += str(digit)[4:7]
 						sm_notes += '\n'
 
 				if measureStart + MEASURE_TICKS == last_note:
